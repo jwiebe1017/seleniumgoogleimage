@@ -1,0 +1,3 @@
+BASE_URL: 'https://www.google.com.sg/search?q={QUERY_PLACEHOLDER}&source=lnms&tbm=isch&sa=X&ei=0eZEVbj3IJG5uATalICQAQ&ved=0CAcQ_AUoAQ&biw=939&bih=591'
+QUERY_REPL: '{QUERY_PLACEHOLDER}'
+TEMP_SEARCH_STR: 'people waving'
