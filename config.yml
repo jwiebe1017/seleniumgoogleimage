@@ -1,3 +1,12 @@
 BASE_URL: 'https://www.google.com.sg/search?q={QUERY_PLACEHOLDER}&source=lnms&tbm=isch&sa=X&ei=0eZEVbj3IJG5uATalICQAQ&ved=0CAcQ_AUoAQ&biw=939&bih=591'
 QUERY_REPL: '{QUERY_PLACEHOLDER}'
 TEMP_SEARCH_STR: 'people waving'
+
+CHROME_DOWNLOAD_DIR: ./downloads
+NUMBER_OF_IMAGES: 10
+RANDOM: True
+
+# Selenium attribs
+THUMBNAIL_CLASS_ELEMENT: 'v4dQwb'
+IMG_CLASS_ELEMENT: 'n3VNCb'
+IMAGES_BASE: 'rg_i'

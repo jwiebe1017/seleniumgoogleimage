@@ -1,42 +1,60 @@
-"""
-Idea is to provide a google search and pull images from the specific search
-TODO: make this a class
-TODO: figure out the 'input' part - gui? hopefully not... in config for now :*(
-TODO: pull and download somewhere, probably stick that shit in the config
-"""
-from typing import Optional
-
-import yaml
-
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
+import utils.selenium_utils as su
+from collections import deque
 
 
-def get_config(loc: Optional[str] = None) -> dict:
-    """
-    Loads in-project config file, optional filelocation can be passed as well.
-    :param loc: [OPTIONAL] file location
-    :return: dict of yaml data
-    """
-    with open(loc if loc else 'config.yml') as f:
-        return yaml.safe_load(f)
+def main():
+    data = su.get_config()
+    query = su.build_url(data['BASE_URL'], data['QUERY_REPL'], data['TEMP_SEARCH_STR'])
+
+    driver = su.webdriver.Chrome(service=su.Service(su.ChromeDriverManager().install()))
+
+    driver.get(query)
+    imgs_on_page = su.collect_images_from_driver(driver, data['IMAGES_BASE'])
+
+    if data['RANDOM'] is True:  # pull completely random photos from the webpage
+        imgs_urls = map(lambda rand_elem:
+                        su.return_img_url(
+                            driver,
+                            imgs_on_page,
+                            rand_elem,
+                            data['THUMBNAIL_CLASS_ELEMENT'],
+                            data['IMG_CLASS_ELEMENT']
+                        ),
+                        su.random.sample(
+                            range(
+                                0,
+                                len(imgs_on_page)
+                            ),
+                            data['NUMBER_OF_IMAGES']
+                        )
+                        )
+    else:  # pull only the first X images from the webpage
+        imgs_urls = map(lambda rand_elem:
+                        su.return_img_url(
+                            driver,
+                            imgs_on_page,
+                            rand_elem,
+                            data['THUMBNAIL_CLASS_ELEMENT'],
+                            data['IMG_CLASS_ELEMENT']
+                        ),
+                        range(
+                            0,
+                            data['NUMBER_OF_IMAGES']
+                        )
+                        )
+
+    img_bytes = map(su.get_img_content, imgs_urls)
+    deque(
+        map(
+            lambda img_byte:
+            su.write_to_file(
+                img_byte,
+                data['CHROME_DOWNLOAD_DIR']
+            ),
+            img_bytes
+        )
+    )
 
 
-def build_url(base_url: str, replacement_key: str, search_string: str) -> str:
-    """
-    Given a base url with placeholder called out, replace it with the search params.
-    :param base_url: base url with replacement val hanging in there
-    :param replacement_key: the replacement val
-    :param search_string: what to replace the val with, i.e. search input
-    :return: string with search items in there
-    """
-    final_string = search_string if ' ' not in search_string else search_string.replace(' ', '+')
-    return base_url.replace(replacement_key, final_string)
-
-
-data = get_config()
-query = build_url(data['BASE_URL'], data['QUERY_REPL'], data['TEMP_SEARCH_STR'])
-
-driver = webdriver.Chrome(ChromeDriverManager().install())
-
-driver.get(query)
+if __name__ == '__main__':
+    main()
