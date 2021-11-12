@@ -65,7 +65,9 @@ def main():
             lambda img_byte:
             su.write_to_file(
                 img_byte,
-                data['CHROME_DOWNLOAD_DIR']
+                data['CHROME_DOWNLOAD_DIR'],
+                data['FILE_NAME'],
+                data['FILE_EXT']
             ),
             img_bytes
         )

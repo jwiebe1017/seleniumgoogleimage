@@ -7,11 +7,13 @@ utils include
  - loading config
 """
 import random
-from typing import Optional, NoReturn
 import time
 import uuid
-from os import path
+import os
 import requests
+import ssl
+from typing import Optional, NoReturn
+
 import yaml
 
 from selenium import webdriver
@@ -133,14 +135,27 @@ def get_img_content(img_url: str) -> bytes:
     :return: bytes representing the img
     """
     # 'bad return' to keep things rolling if theres a little floop here
-    return requests.get(img_url).content if requests.get(img_url).status_code is 200 else b'BAD RETURN'
+    try:
+        return requests.get(img_url).content if requests.get(img_url).status_code is 200 else b'BAD RETURN'
+    except ssl.SSLCertVerificationError:
+        return b'BAD RETURN'
+
+
+def check_or_create_dir(folder_loc: str) -> NoReturn:
+    """
+    create a directory if it does not exist
+    :param folder_loc: path to dir
+    :return: new directory created
+    """
+    if not os.path.exists(folder_loc):
+        os.makedirs(folder_loc)
 
 
 def write_to_file(
         img_content: bytes,
         file_loc: str,
         filename: Optional[str] = None,
-        file_ext: Optional[str] = '.png') -> NoReturn:
+        file_ext: Optional[str] = None) -> NoReturn:
     """
     Writes bytes objects to file, optional params if things change or need to be specified
     :param img_content: bytes rep of content to write to file
@@ -149,7 +164,15 @@ def write_to_file(
     :param file_ext: optional, default is .png
     :return: NoReturn, saves the file
     """
-    file_name = f'{filename}{file_ext}' if filename else f'{uuid.uuid4()}{file_ext}'
-    full_filepath = path.join(file_loc, file_name)
+    # create dir if it doesnt exist
+    check_or_create_dir(file_loc)
+
+    # set up file names/paths
+    file_name = filename if filename else str(uuid.uuid4())
+    file_extension = file_ext if file_ext else '.png'
+    full_filename = file_name + file_extension
+    full_filepath = os.path.join(file_loc, full_filename)
+
+    # save
     with open(full_filepath, 'wb') as f:
         f.write(img_content)
