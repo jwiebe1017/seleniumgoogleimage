@@ -1,10 +1,18 @@
+# url with placeholder elements to exchange with search text
 BASE_URL: 'https://www.google.com.sg/search?q={QUERY_PLACEHOLDER}&source=lnms&tbm=isch&sa=X&ei=0eZEVbj3IJG5uATalICQAQ&ved=0CAcQ_AUoAQ&biw=939&bih=591'
 QUERY_REPL: '{QUERY_PLACEHOLDER}'
 TEMP_SEARCH_STR: 'people waving'
 
+# where images will be downloaded to
 CHROME_DOWNLOAD_DIR: ./downloads
+
+# how many images, for random selection only
 NUMBER_OF_IMAGES: 10
 RANDOM: True
+
+# if not random, provide range of pics
+START_RANGE_OF_IMAGES: 0
+END_RANGE_OF_IMAGES: 0
 
 # Selenium attribs
 THUMBNAIL_CLASS_ELEMENT: 'v4dQwb'
