@@ -1,3 +1,13 @@
+"""
+driver file for using google image search with Selenium
+1. downloads chromedriver to cache
+2. heads to google images and searches for intended images
+3. collects and downloads images one-at-a-time
+    3a. pulls either at random or specific set of imgs based on config
+    3b. scrolls to top of page then to the element in question
+    3c. clicks/downloads to appropriate location specified in config
+4. exits
+"""
 import utils.selenium_utils as su
 from collections import deque
 
@@ -49,6 +59,7 @@ def main():
                         )
 
     img_bytes = map(su.get_img_content, imgs_urls)
+    # save the images out to designated location
     deque(
         map(
             lambda img_byte:
