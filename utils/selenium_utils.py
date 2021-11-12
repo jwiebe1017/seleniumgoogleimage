@@ -1,8 +1,10 @@
 """
 Idea is to provide a google search and pull images from the specific search
-TODO: make this a class
-TODO: figure out the 'input' part - gui? hopefully not... in config for now :*(
-TODO: pull and download somewhere, probably stick that shit in the config
+utils include
+ - downloading imgs to file
+ - selecting imgs from webdriver page
+ - collecting urls from imgs
+ - loading config
 """
 import random
 from typing import Optional, NoReturn

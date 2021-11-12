@@ -25,3 +25,4 @@ Not sure if I care enough to fix this as it works pretty smoothly as-is otherwis
 `os`  
 `collections`  
 `time`  
+`webdriver_manager`  
