@@ -20,45 +20,61 @@ def main():
     # pull config
     data = su.get_config()
     # build url with 'google search' terms embedded
-    query = su.build_url(data['BASE_URL'], data['QUERY_REPL'], data['TEMP_SEARCH_STR'])
+    query = su.build_url(
+        data['BASE_URL'],
+        data['QUERY_REPL'],
+        data['TEMP_SEARCH_STR']
+    )
     # start driver, just use a cached version
-    driver = su.webdriver.Chrome(service=su.Service(su.ChromeDriverManager().install()))
+    driver = su.webdriver.Chrome(
+        service=su.Service(su.ChromeDriverManager().install()),
+        desired_capabilities={
+            'chromeOptions': {
+                "args": data['chrome_settings_args'],
+            }
+        }
+    )
     # head to url, pull pics
     driver.get(query)
     # user is expected to pick either sequential results or totally random results
     if data['RANDOM'] is True:  # pull completely random photos from the webpage
-        imgs_urls = map(lambda rand_elem:
-                        su.return_img_url(  # pulls img url in 'src' of html
-                            driver,
-                            data['IMAGES_BASE'],
-                            rand_elem,
-                            data['THUMBNAIL_CLASS_ELEMENT'],
-                            data['IMG_CLASS_ELEMENT']
-                        ),
-                        su.random.sample(  # pulls based on a random int based on # requested in config
-                            range(
-                                0,
-                                data['NUMBER_OF_IMAGES'] + 1
-                            ),
-                            data['NUMBER_OF_IMAGES']
-                        )
-                        )
+        imgs_urls = map(
+            lambda rand_elem:
+            su.return_img_url(  # pulls img url in 'src' of html
+                driver,
+                data['IMAGES_BASE'],
+                rand_elem,
+                data['THUMBNAIL_CLASS_ELEMENT'],
+                data['IMG_CLASS_ELEMENT']
+            ),
+            su.random.sample(  # pulls based on a random int based on # requested in config
+                range(
+                    0,
+                    data['NUMBER_OF_IMAGES'] + 1
+                ),
+                data['NUMBER_OF_IMAGES']
+            )
+        )
     else:  # pull X range images from the webpage
-        imgs_urls = map(lambda rand_elem:
-                        su.return_img_url(
-                            driver,
-                            data['IMAGES_BASE'],
-                            rand_elem,
-                            data['THUMBNAIL_CLASS_ELEMENT'],
-                            data['IMG_CLASS_ELEMENT']
-                        ),
-                        range(
-                            data['START_RANGE_OF_IMAGES'],
-                            data['END_NUMBER_OF_IMAGES']
-                        )
-                        )
+        imgs_urls = map(
+            lambda rand_elem:
+            su.return_img_url(
+                driver,
+                data['IMAGES_BASE'],
+                rand_elem,
+                data['THUMBNAIL_CLASS_ELEMENT'],
+                data['IMG_CLASS_ELEMENT']
+            ),
+            range(
+                data['START_RANGE_OF_IMAGES'],
+                data['END_NUMBER_OF_IMAGES']
+            )
+        )
 
-    img_bytes = map(su.get_img_content, imgs_urls)
+    img_bytes = map(
+        su.get_img_content,
+        imgs_urls
+    )
     # save the images out to designated location
     deque(
         map(
