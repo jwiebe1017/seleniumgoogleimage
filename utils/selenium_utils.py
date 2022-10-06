@@ -11,10 +11,9 @@ import time
 import uuid
 import os
 import requests
+import requests.exceptions as req_e
 import ssl
 from typing import Optional, NoReturn
-
-import yaml
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -24,29 +23,21 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException, ElementNotInteractableException
 )
 
+from .utils import logging_setup
+
 __author__ = 'jwiebe1017'
 __version__ = '1.0.0'
 __credits__ = ['stackoverflow', 'me, myself, and I', 'you I guess?']
 
-
-# typehints
+# typehints + logging essentials
 DRIVER = webdriver.chrome.webdriver.WebDriver
 WEBELEMENT = webdriver.remote.webelement.WebElement
-
-
-def get_config(loc: Optional[str] = None) -> dict:
-    """
-    Loads in-project config file, optional filelocation can be passed as well.
-    :param loc: [OPTIONAL] file location
-    :return: dict of yaml data
-    """
-    with open(loc if loc else 'config.yml') as f:
-        return yaml.safe_load(f)
+logger = logging_setup(__name__)
 
 
 def build_url(base_url: str, replacement_key: str, search_string: str) -> str:
     """
-    Given a base url with placeholder called out, replace it with the search params.
+    Given a base url with placeholder called out, replace it with the search params
     :param base_url: base url with replacement val hanging in there
     :param replacement_key: the replacement val
     :param search_string: what to replace the val with, i.e. search input
@@ -70,12 +61,14 @@ def collect_images_from_driver(
     :param element: element to search for
     :return: list of collected images
     """
-    if collected_images is None:
+    if not collected_images:
         collected_images = driver.find_elements(By.CLASS_NAME, element)
     if range_of_images > len(collected_images):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         collected_images = driver.find_elements(By.CLASS_NAME, element)
         collect_images(driver, range_of_images, collected_images)
+
+    logger.info(f'Identified {len(collected_images)}')
     return collected_images
 
 
@@ -95,6 +88,7 @@ def click_on_element(driver: DRIVER, element: WEBELEMENT) -> NoReturn:
         time.sleep(random.uniform(1, 3))
     except (ElementClickInterceptedException, ElementNotInteractableException):
         # clickintercept, scroll the page around element in present with more sleeps
+        logger.warning('Click Attempt Failed, Re-Attempting')
         click_on_element(driver, element)
     return
 
@@ -119,7 +113,8 @@ def return_img_url(driver: DRIVER, base_element: str, elem_num: int, thumbnail_c
 
     # pull the actual image
     pic = driver.find_elements(By.CLASS_NAME, thumbnail_class_element)
-    return pic[0].find_elements(  # pic is len(2) list, google provides link in only one based on which img it is
+    return pic[0].find_elements(
+        # pic is len(2) list, google provides link in only one based on which img it is
         By.CLASS_NAME,
         img_class_element
     )[0].get_attribute('src') if elem_num == 0 else pic[1].find_elements(
@@ -134,10 +129,22 @@ def get_img_content(img_url: str) -> bytes:
     :param img_url: url to image src
     :return: bytes representing the img
     """
-    # 'bad return' to keep things rolling if theres a little floop here
+    # 'bad return' to keep things rolling if there's a little floop here
     try:
-        return requests.get(img_url).content if requests.get(img_url).status_code is 200 else b'BAD RETURN'
-    except ssl.SSLCertVerificationError:
+        logger.info(f'GET {img_url}')
+        request_attempt = requests.get(img_url)
+        if request_attempt.status_code == 200:
+            logger.info('Success')
+            return request_attempt.content
+        logger.warning('Unsuccessful return status code')
+        return b'BAD RETURN'
+    except (
+            ssl.SSLCertVerificationError,
+            req_e.InvalidSchema,
+
+    ):
+        logger.error("Exception occurred", exc_info=True)
+        logger.warning("Returning bytes 'BAD RETURN'")
         return b'BAD RETURN'
 
 
@@ -148,6 +155,7 @@ def check_or_create_dir(folder_loc: str) -> NoReturn:
     :return: new directory created
     """
     if not os.path.exists(folder_loc):
+        logger.warning(f"No Folder Exists, Creating {folder_loc}")
         os.makedirs(folder_loc)
 
 
@@ -174,5 +182,6 @@ def write_to_file(
     full_filepath = os.path.join(file_loc, full_filename)
 
     # save
+    logger.info(f'Writing {full_filepath}')
     with open(full_filepath, 'wb') as f:
         f.write(img_content)

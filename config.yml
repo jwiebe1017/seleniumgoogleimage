@@ -14,12 +14,15 @@ RANDOM: True
 START_RANGE_OF_IMAGES: 0
 END_RANGE_OF_IMAGES: 0
 
+# can configure logging for debug mode
+LOGGING_DEBUG_MODE: False
+
 ##
 # End user input // begin static config
 ##
 
 # Chrome base/info
-BASE_URL: 'https://www.google.com.sg/search?q={QUERY_PLACEHOLDER}&source=lnms&tbm=isch&sa=X&ei=0eZEVbj3IJG5uATalICQAQ&ved=0CAcQ_AUoAQ&biw=939&bih=591'
+BASE_URL: https://www.google.com/search?tbm=isch&q={QUERY_PLACEHOLDER}
 QUERY_REPL: '{QUERY_PLACEHOLDER}'
 
 # Selenium attribs

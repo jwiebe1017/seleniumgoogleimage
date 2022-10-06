@@ -8,7 +8,9 @@ driver file for using google image search with Selenium
     3c. clicks/downloads to appropriate location specified in config
 4. exits
 """
+
 import utils.selenium_utils as su
+import utils.utils as u
 from collections import deque
 
 __author__ = 'jwiebe1017'
@@ -17,14 +19,22 @@ __credits__ = ['stackoverflow', 'me, myself, and I', 'you I guess?']
 
 
 def main():
-    # pull config
-    data = su.get_config()
+    # pull config, setup logging
+    data = u.get_config()
+    logging = u.logging_setup(
+        __name__,
+        data['LOGGING_DEBUG_MODE']
+    )
+
+    logging.info('Starting...')
     # build url with 'google search' terms embedded
     query = su.build_url(
         data['BASE_URL'],
         data['QUERY_REPL'],
         data['TEMP_SEARCH_STR']
     )
+
+    logging.info(f'{query}')
     # start driver, just use a cached version
     driver = su.webdriver.Chrome(
         service=su.Service(su.ChromeDriverManager().install()),
@@ -38,6 +48,7 @@ def main():
     driver.get(query)
     # user is expected to pick either sequential results or totally random results
     if data['RANDOM'] is True:  # pull completely random photos from the webpage
+        logging.info('Random Images Selected, Pulling')
         imgs_urls = map(
             lambda rand_elem:
             su.return_img_url(  # pulls img url in 'src' of html
@@ -56,6 +67,7 @@ def main():
             )
         )
     else:  # pull X range images from the webpage
+        logging.info('Fixed Range of Images Selected, Pulling')
         imgs_urls = map(
             lambda rand_elem:
             su.return_img_url(
@@ -88,6 +100,7 @@ def main():
             img_bytes
         )
     )
+    logging.info("Complete")
 
 
 if __name__ == '__main__':
