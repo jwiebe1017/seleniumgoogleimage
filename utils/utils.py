@@ -6,6 +6,10 @@ from typing import Optional
 
 import yaml
 
+__author__ = 'jwiebe1017'
+__version__ = '1.0.0'
+__credits__ = ['stackoverflow', 'me, myself, and I', 'you I guess?']
+
 
 def logging_setup(mod_name: str, debug: bool = False) -> logging.Logger:
     """
